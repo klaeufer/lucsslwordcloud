@@ -20,19 +20,19 @@ object GenerateWordcloud extends App {
   val database = mongoClient.getDatabase(databaseName)
   val collection = database.getCollection("tweets")
 
-  val wordArrays = for {
-    document <- collection.find()
+  val wordArrays: Observable[Array[String]] = for {
+    document <- collection.find(): Observable[Document]
     line = document("text").asString.getValue
   } yield for {
-    word <- line.split("(?U)[\\W]+")
+    word <- line.split("(?U)[\\W]+"): Array[String]
     if word.length >= MIN_LENGTH
     wordLC = word.toLowerCase
     if !ignoreSet.contains(wordLC)
   } yield {
-    wordLC
+    wordLC: String
   }
 
-  val frequencyTable = wordArrays.foldLeft(Map.empty[String, Int]) {
+  val frequencyTable: Observable[Map[String, Int]] = wordArrays.foldLeft(Map.empty[String, Int]) {
     case (t, arr) =>
       arr.foldLeft(t) {
         case (m, w) =>
@@ -40,7 +40,7 @@ object GenerateWordcloud extends App {
       }
   }
 
-  val sortedTable = frequencyTable.map { m =>
+  val sortedTable: Observable[Seq[(String, Int)]] = frequencyTable.map { m =>
     m.toSeq.sortBy(_._2)(math.Ordering.Int.reverse).take(TOP_N)
   }
 
