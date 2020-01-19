@@ -32,7 +32,7 @@ object GenerateWordcloud extends App {
     wordLC: String
   }
 
-  val frequencyTable: Observable[Map[String, Int]] = wordArrays.foldLeft(Map.empty[String, Int]) {
+  val frequencyTable: SingleObservable[Map[String, Int]] = wordArrays.foldLeft(Map.empty[String, Int]) {
     case (t, arr) =>
       arr.foldLeft(t) {
         case (m, w) =>
@@ -40,7 +40,7 @@ object GenerateWordcloud extends App {
       }
   }
 
-  val sortedTable: Observable[Seq[(String, Int)]] = frequencyTable.map { m =>
+  val sortedTable: SingleObservable[Seq[(String, Int)]] = frequencyTable.map { m =>
     m.toSeq.sortBy(_._2)(math.Ordering.Int.reverse).take(TOP_N)
   }
 
